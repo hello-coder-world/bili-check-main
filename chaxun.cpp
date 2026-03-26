@@ -80,16 +80,21 @@ void pr()
 void tongji()
 {
     cout << "总收入统计：" << endl;
-    vector<vector<string>> cardData = readCSV("card.csv");
     double totalIncome = 0;
-    for (size_t i = 1; i < cardData.size(); ++i) {
-        if (cardData[i].size() >= 6) {
-            totalIncome += atof(cardData[i][5].c_str());
+    int totalCards = 0;
+    int activeCards = 0;
+    CardNode* current = cardListHead;
+    while (current != nullptr) {
+        totalIncome += current->data.tmoney;
+        totalCards++;
+        if (current->data.del == 0) {
+            activeCards++;
         }
+        current = current->next;
     }
     cout << "当前总收入: " << totalIncome << "元" << endl;
-    cout<<"共有 "<<cardData.size()-1<<" 张卡" << endl;
-    cout<<"其中未注销的卡有 "<<count_if(cardData.begin()+1, cardData.end(), [](const vector<string>& row){ return row.size() >= 10 && row[9] == "0"; })<<" 张" << endl;
+    cout << "共有 " << totalCards << " 张卡" << endl;
+    cout << "其中未注销的卡有 " << activeCards << " 张" << endl;
     system("pause");
 }
 

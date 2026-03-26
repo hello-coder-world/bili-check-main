@@ -53,24 +53,10 @@ void addcard()
     anew.tstart = time(NULL);
     
     
-    ofstream file("card.csv", ios::app);
-    if (!file.is_open()) {
-        cout << "文件打开失败！" << endl;
-        return;
-    }
-    
-    file << anew.name << ","
-         << anew.password << ","
-         << anew.state << ","
-         << anew.tstart << ","
-         << anew.tend << ","
-         << anew.tmoney << ","
-         << anew.tlast << ","
-         << anew.nuse << ","
-         << anew.rest << ","
-         << anew.del << endl;
-    
-    file.close();
+    // 添加到链表
+    addCardToList(anew);
+    // 保存到CSV
+    saveCardsToCSV();
     
     cout << "账号创建完毕！卡号：" << anew.name << "，余额：" << anew.rest << "元" << endl;
     system("pause");  // 暂停显示结果

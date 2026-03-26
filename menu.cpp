@@ -2,7 +2,7 @@
 
 int OutputMnue()
 {
-    cout<<"--------菜单--------"<<endl;
+    cout<<"=======菜单========"<<endl;
     cout<<"1.添加卡"<<endl;//
     cout<<"2.查询卡"<<endl;//
     cout<<"3.上机"<<endl;

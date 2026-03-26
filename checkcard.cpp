@@ -1,44 +1,38 @@
 #include "bili.h"
-#include "opencsv.h"
 
 
-void displayCardInfo(vector<string>* rowData)
+void displayCardInfo(const card& c)
 {
-
-    cout << "卡号: " << (*rowData)[0] << endl;
-    if((*rowData)[2] == "0")
+    cout << "卡号: " << c.name << endl;
+    if(c.state == 0)
     cout << "状态: " << "未上机" << endl;
-    if((*rowData)[2] == "1")
+    if(c.state == 1)
     cout << "状态: " << "上机中" << endl;
-    if((*rowData)[2] == "2")
+    if(c.state == 2)
     cout << "状态: " << "已注销" << endl;
-    if((*rowData)[2] == "3")
+    if(c.state == 3)
     cout << "状态: " << "失效" << endl;
     
 
-
-    time_t startTime = atol((*rowData)[3].c_str());
-    if (startTime > 0) {
+    if (c.tstart > 0) {
         char timeStr[100];
-        strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&startTime));
+        strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&c.tstart));
         cout << "开卡时间: " << timeStr << endl;
     }
     
 
+    cout << "累计金额: " << c.tmoney << "元" << endl;
     
-    cout << "累计金额: " << (*rowData)[5] << "元" << endl;
-    
-    time_t lastTime = atol((*rowData)[6].c_str());
-    if (lastTime > 0) {
+    if (c.tlast > 0) {
         char timeStr[100];
-        strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&lastTime));
+        strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&c.tlast));
         cout << "最后使用: " << timeStr << endl;
     }
     
-    cout << "使用次数: " << (*rowData)[7] << "次" << endl;
-    cout << "卡内余额: " << (*rowData)[8] << "元" << endl;
+    cout << "使用次数: " << c.nuse << "次" << endl;
+    cout << "卡内余额: " << c.rest << "元" << endl;
     
-    if ((*rowData)[9] == "1") {
+    if (c.del == 1) {
         cout << "【已注销】" << endl;
     }
 }
@@ -55,13 +49,7 @@ void querycard()
     cout << "请选择: ";
     cin >> choice;
     
-    
-    CsvFile csv("card.csv");
-    
-    
-    int rows = csv.row;
-    
-    if (rows <= 1) {  
+    if (cardListHead == nullptr) {  
         cout << "没有卡数据！" << endl;
         system("pause");
         return;
@@ -73,18 +61,17 @@ void querycard()
             cout << "请输入卡号: ";
             cin >> cardNum;
             
+            CardNode* current = cardListHead;
             bool found = false;
-            for (int i = 1; i < rows; i++) {
-                vector<string>* rowData = csv.getRow(i);
-                if ((*rowData)[0] == cardNum) {
+            while (current != nullptr) {
+                if (current->data.name == cardNum) {
                     cout << "\n========== 卡信息 ==========" << endl;
-                    displayCardInfo(rowData);
+                    displayCardInfo(current->data);
                     cout << "=============================" << endl;
                     found = true;
-                    delete rowData;
                     break;
                 }
-                delete rowData;
+                current = current->next;
             }
             
             if (!found) {
@@ -95,28 +82,32 @@ void querycard()
         
         case 2: {
             cout << "\n===== 所有卡信息 =====" << endl;
-            for (int i = 1; i < rows; i++) {
-                vector<string>* rowData = csv.getRow(i);
-                cout << "--- 卡 " << (i) << " ---" << endl;
-                displayCardInfo(rowData);
+            CardNode* current = cardListHead;
+            int i = 1;
+            while (current != nullptr) {
+                cout << "--- 卡 " << i << " ---" << endl;
+                displayCardInfo(current->data);
                 cout << "---------------------" << endl;
-                delete rowData;
+                current = current->next;
+                i++;
             }
             break;
         }
         
         case 3: {
             cout << "\n===== 未注销卡 =====" << endl;
+            CardNode* current = cardListHead;
             int count = 0;
-            for (int i = 1; i < rows; i++) {
-                vector<string>* rowData = csv.getRow(i);
-                if ((*rowData)[9] == "0") {
-                    cout << "--- 卡 " << (i) << " ---" << endl;
-                    displayCardInfo(rowData);
+            int i = 1;
+            while (current != nullptr) {
+                if (current->data.del == 0) {
+                    cout << "--- 卡 " << i << " ---" << endl;
+                    displayCardInfo(current->data);
                     cout << "---------------------" << endl;
                     count++;
                 }
-                delete rowData;
+                current = current->next;
+                i++;
             }
             if (count == 0) cout << "没有未注销的卡" << endl;
             else cout << "共 " << count << " 张未注销卡" << endl;
@@ -125,16 +116,18 @@ void querycard()
         
         case 4: {
             cout << "\n===== 已注销卡 =====" << endl;
+            CardNode* current = cardListHead;
             int count = 0;
-            for (int i = 1; i < rows; i++) {
-                vector<string>* rowData = csv.getRow(i);
-                if ((*rowData)[9] == "1") {
-                    cout << "--- 卡 " << (i) << " ---" << endl;
-                    displayCardInfo(rowData);
+            int i = 1;
+            while (current != nullptr) {
+                if (current->data.del == 1) {
+                    cout << "--- 卡 " << i << " ---" << endl;
+                    displayCardInfo(current->data);
                     cout << "---------------------" << endl;
                     count++;
                 }
-                delete rowData;
+                current = current->next;
+                i++;
             }
             if (count == 0) cout << "没有已注销的卡" << endl;
             else cout << "共 " << count << " 张已注销卡" << endl;
@@ -149,17 +142,18 @@ void querycard()
             cin >> maxBalance;
             
             cout << "\n===== 余额在 " << minBalance << "-" << maxBalance << " 的卡 =====" << endl;
+            CardNode* current = cardListHead;
             int count = 0;
-            for (int i = 1; i < rows; i++) {
-                vector<string>* rowData = csv.getRow(i);
-                double balance = atof((*rowData)[8].c_str());
-                if (balance >= minBalance && balance <= maxBalance && (*rowData)[9] == "0") {
-                    cout << "--- 卡 " << (i) << " ---" << endl;
-                    displayCardInfo(rowData);
+            int i = 1;
+            while (current != nullptr) {
+                if (current->data.rest >= minBalance && current->data.rest <= maxBalance && current->data.del == 0) {
+                    cout << "--- 卡 " << i << " ---" << endl;
+                    displayCardInfo(current->data);
                     cout << "---------------------" << endl;
                     count++;
                 }
-                delete rowData;
+                current = current->next;
+                i++;
             }
             if (count == 0) cout << "没有符合条件的卡" << endl;
             else cout << "共 " << count << " 张卡符合条件" << endl;

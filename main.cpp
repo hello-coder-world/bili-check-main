@@ -8,6 +8,7 @@
 #include "headers/rw.cpp"
 #include"play.cpp"
 #include"chaxun.cpp"
+#include "cardlist.cpp"
 
 
 
@@ -40,6 +41,7 @@ int main()
         createPriceFile << "50,30,5" << endl; // 默认价格 
     }
     checkPriceFile.close();
+    loadCardsFromCSV();  // 加载卡片数据到链表
     do
     {
         switch (i)

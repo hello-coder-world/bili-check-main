@@ -12,24 +12,6 @@
 
 using namespace std;
 
-
-int OutputMnue();
-void addcard();
-void querycard();
-void displayCardInfo(vector<string>* rowData);
-vector<vector<string>> readCSV(const string& filename);
-void writeCSV(const string& filename, const vector<vector<string>>& data);
-void delcard();
-void addmoney();
-void payback();
-void start();
-void stop();
-void manage();
-void pr();
-void tongji();
-void change_password();
-
-
 class card
 {
 public:
@@ -56,6 +38,39 @@ public:
         del = 0;
     }
 };
+
+// 链表节点
+struct CardNode {
+    card data;
+    CardNode* next;
+    CardNode(card c) : data(c), next(nullptr) {}
+};
+
+// 全局链表头指针
+extern CardNode* cardListHead;
+
+int OutputMnue();
+void addcard();
+void querycard();
+void displayCardInfo(vector<string>* rowData);
+vector<vector<string>> readCSV(const string& filename);
+void writeCSV(const string& filename, const vector<vector<string>>& data);
+void delcard();
+void addmoney();
+void payback();
+void start();
+void stop();
+void manage();
+void pr();
+void tongji();
+void change_password();
+
+
+void loadCardsFromCSV();
+void saveCardsToCSV();
+void addCardToList(card newCard);
+void deleteCardFromList(string cardNumber);
+CardNode* findCardInList(string cardNumber);
 
 
 
